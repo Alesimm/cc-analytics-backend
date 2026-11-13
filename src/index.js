@@ -1,11 +1,12 @@
-// Punto de entrada principal del servidor backend de CC Analytics.
-// Configura Express, habilita CORS, inicializa la base de datos SQLite y expone la ruta de estado /api/health.
+// archivo principal que levanta el servidor backend de cc analytics.
+// configura express y cors, inicia sqlite con datos base, expone /api/health y conecta las rutas de la api.
 
 import express from "express";
 import cors from "cors";
 import { ENV } from "./config/env.js";
 import { initDb, queryOne } from "./database/db.js";
 import { seedIfEmpty } from "./database/seed.js";
+import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
@@ -31,6 +32,9 @@ app.get("/api/health", (req, res) => {
     },
   });
 });
+
+// rutas de la version 1 de la api
+app.use("/api/v1/auth", authRoutes);
 
 // arranque ordenado: inicializar sqlite, poblar si esta vacio y levantar servidor
 async function iniciarServidor() {
