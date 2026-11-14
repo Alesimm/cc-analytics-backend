@@ -7,6 +7,9 @@ import { ENV } from "./config/env.js";
 import { initDb, queryOne } from "./database/db.js";
 import { seedIfEmpty } from "./database/seed.js";
 import authRoutes from "./routes/authRoutes.js";
+import jugadoresRoutes from "./routes/jugadoresRoutes.js";
+import { listarJugadoresV2, eliminarDirectriz } from "./controllers/jugadoresController.js";
+import { verificarToken, autorizarRoles } from "./middlewares/authMiddleware.js";
 
 const app = express();
 
@@ -33,8 +36,11 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// rutas de la version 1 de la api
+// rutas de la version 1 y version 2 de la api
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/jugadores", jugadoresRoutes);
+app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
+app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
 
 // arranque ordenado: inicializar sqlite, poblar si esta vacio y levantar servidor
 async function iniciarServidor() {
