@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes.js";
 import jugadoresRoutes from "./routes/jugadoresRoutes.js";
 import formacionesRoutes from "./routes/formacionesRoutes.js";
 import medicoRoutes from "./routes/medicoRoutes.js";
+import partidosRoutes from "./routes/partidosRoutes.js";
 import { listarJugadoresV2, eliminarDirectriz } from "./controllers/jugadoresController.js";
 import { verificarToken, autorizarRoles } from "./middlewares/authMiddleware.js";
 
@@ -43,6 +44,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/jugadores", jugadoresRoutes);
 app.use("/api/v1/formaciones", formacionesRoutes);
 app.use("/api/v1/medico", medicoRoutes);
+app.use("/api/v1/partidos", partidosRoutes);
 app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
 app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
 
