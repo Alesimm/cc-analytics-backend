@@ -17,9 +17,10 @@ import { verificarToken, autorizarRoles } from "./middlewares/authMiddleware.js"
 
 const app = express();
 
-// middlewares globales
+// oculta la cabecera x-powered-by y limita el tamaño del json por seguridad
+app.disable("x-powered-by");
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 
 // ruta publica de verificacion de estado y base de datos
 app.get("/api/health", (req, res) => {

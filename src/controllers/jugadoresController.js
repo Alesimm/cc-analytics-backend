@@ -73,8 +73,8 @@ export function crearJugador(req, res) {
     return res.status(400).json({ ok: false, mensaje: "El dorsal debe ser un numero entre 1 y 99." });
   }
 
-  if (Number.isNaN(edadNumero) || Number.isNaN(partidosNumero)) {
-    return res.status(400).json({ ok: false, mensaje: "La edad y los partidos deben ser numeros." });
+  if (Number.isNaN(edadNumero) || edadNumero < 15 || edadNumero > 60 || Number.isNaN(partidosNumero) || partidosNumero < 0) {
+    return res.status(400).json({ ok: false, mensaje: "La edad (15 a 60) y los partidos (0 o mas) deben ser numeros validos." });
   }
 
   const dorsalOcupado = queryOne("SELECT id FROM jugadores WHERE dorsal = ?", [dorsalNumero]);
@@ -136,8 +136,8 @@ export function actualizarJugador(req, res) {
     partidos: datos.partidos !== undefined ? Number(datos.partidos) : existente.partidos,
   };
 
-  if (Number.isNaN(actualizado.edad) || Number.isNaN(actualizado.partidos)) {
-    return res.status(400).json({ ok: false, mensaje: "La edad y los partidos deben ser numeros." });
+  if (Number.isNaN(actualizado.edad) || actualizado.edad < 15 || actualizado.edad > 60 || Number.isNaN(actualizado.partidos) || actualizado.partidos < 0) {
+    return res.status(400).json({ ok: false, mensaje: "La edad (15 a 60) y los partidos (0 o mas) deben ser numeros validos." });
   }
 
   execute(

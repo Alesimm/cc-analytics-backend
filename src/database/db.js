@@ -145,13 +145,16 @@ export async function initDb() {
 // consulta multiples filas como arreglo de objetos planos
 export function queryAll(sql, params = []) {
   const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) {
-    rows.push(stmt.getAsObject());
+  try {
+    stmt.bind(params);
+    const rows = [];
+    while (stmt.step()) {
+      rows.push(stmt.getAsObject());
+    }
+    return rows;
+  } finally {
+    stmt.free();
   }
-  stmt.free();
-  return rows;
 }
 
 // consulta una sola fila o null si no existe
@@ -163,7 +166,10 @@ export function queryOne(sql, params = []) {
 // ejecuta insert, update o delete y persiste en disco
 export function execute(sql, params = []) {
   const stmt = db.prepare(sql);
-  stmt.run(params);
-  stmt.free();
+  try {
+    stmt.run(params);
+  } finally {
+    stmt.free();
+  }
   saveDb();
 }
