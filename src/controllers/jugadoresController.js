@@ -2,11 +2,12 @@
 // incluye el crud completo de jugadores (v1), el listado enriquecido con directrices (v2)
 // y la creacion, consulta y eliminacion de directrices para la vista de rendimiento.
 
+import crypto from "node:crypto";
 import { queryAll, queryOne, execute } from "../database/db.js";
 
-// genera un id simple y unico usando la marca de tiempo
+// genera un id corto y aleatorio para que nunca se repita
 function generarId(prefijo) {
-  return `${prefijo}-${Date.now().toString().slice(-6)}`;
+  return `${prefijo}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 // formatea la fecha actual en texto corto como "13 nov 2026"
@@ -66,9 +67,14 @@ export function crearJugador(req, res) {
 
   const dorsalNumero = Number(dorsal);
   const edadNumero = Number(edad);
+  const partidosNumero = partidos !== undefined ? Number(partidos) : 0;
 
   if (Number.isNaN(dorsalNumero) || dorsalNumero < 1 || dorsalNumero > 99) {
     return res.status(400).json({ ok: false, mensaje: "El dorsal debe ser un numero entre 1 y 99." });
+  }
+
+  if (Number.isNaN(edadNumero) || Number.isNaN(partidosNumero)) {
+    return res.status(400).json({ ok: false, mensaje: "La edad y los partidos deben ser numeros." });
   }
 
   const dorsalOcupado = queryOne("SELECT id FROM jugadores WHERE dorsal = ?", [dorsalNumero]);
@@ -86,7 +92,7 @@ export function crearJugador(req, res) {
     pie: String(pie).trim(),
     rol: String(rol).trim(),
     estado: String(estado).trim(),
-    partidos: Number(partidos) || 0,
+    partidos: partidosNumero,
   };
 
   execute(
@@ -129,6 +135,10 @@ export function actualizarJugador(req, res) {
     estado: datos.estado !== undefined ? String(datos.estado).trim() : existente.estado,
     partidos: datos.partidos !== undefined ? Number(datos.partidos) : existente.partidos,
   };
+
+  if (Number.isNaN(actualizado.edad) || Number.isNaN(actualizado.partidos)) {
+    return res.status(400).json({ ok: false, mensaje: "La edad y los partidos deben ser numeros." });
+  }
 
   execute(
     `UPDATE jugadores

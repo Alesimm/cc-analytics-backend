@@ -1,5 +1,6 @@
-// Script de carga inicial (seed) para poblar la base de datos con usuarios, plantel, partidos, tacticas, fichas medicas y tickets.
-// Permite tener datos reales de Colo-Colo listos apenas arranca el servidor por primera vez.
+// script de carga inicial (seed) para poblar la base de datos con usuarios, plantel, partidos, tacticas, fichas medicas y tickets.
+// permite tener datos reales de colo-colo listos apenas arranca el servidor por primera vez.
+// los ids de jugadores usados en las formaciones coinciden con los del plantel para que el frontend los cruce bien.
 
 import bcrypt from "bcryptjs";
 import { initDb, queryOne, execute, saveDb } from "./db.js";
@@ -33,7 +34,7 @@ const USUARIOS_SEED = [
 
 const JUGADORES_SEED = [
   { id: "jug-1", nombre: "Brayan Cortés", dorsal: 1, posicion: "Arquero", edad: 29, altura: "1.86 m", pie: "Derecho", rol: "Titular", estado: "Disponible", partidos: 24 },
-  { id: "jug-2", nombre: "Fernando de Paul", dorsal: 30, posicion: "Arquero", edad: 33, altura: "1.83 m", pie: "Derecho", rol: "Suplente", estado: "Disponible", partidos: 8 },
+  { id: "jug-2", nombre: "Fernando de Paul", dorsal: 30, posicion: "Arquero", edad: 33, altura: "1.83 m", pie: "Derecho", rol: "Suplente", estado: "En recuperación", partidos: 8 },
   { id: "jug-3", nombre: "Maximiliano Falcón", dorsal: 37, posicion: "Defensa", edad: 27, altura: "1.80 m", pie: "Derecho", rol: "Titular", estado: "Disponible", partidos: 26 },
   { id: "jug-4", nombre: "Alan Saldivia", dorsal: 4, posicion: "Defensa", edad: 22, altura: "1.81 m", pie: "Derecho", rol: "Titular", estado: "En recuperación", partidos: 20 },
   { id: "jug-5", nombre: "Erick Wiemberg", dorsal: 21, posicion: "Defensa", edad: 30, altura: "1.78 m", pie: "Izquierdo", rol: "Titular", estado: "Disponible", partidos: 25 },
@@ -95,11 +96,12 @@ const PARTIDOS_SEED = [
   },
 ];
 
+// suplentes reales del plantel que no son titulares en las formaciones base
 const SUPLENTES_BASE = [
   { id: "jug-2", dorsal: 30, nombre: "F. De Paul", posicion: "Arquero", rol: "POR", media: 78 },
-  { id: "jug-7", dorsal: 15, nombre: "E. Amor", posicion: "Defensa", rol: "DFC", media: 79 },
-  { id: "jug-11", dorsal: 34, nombre: "V. Pizarro", posicion: "Mediocampo", rol: "MC", media: 80 },
-  { id: "jug-14", dorsal: 29, nombre: "G. Paiva", posicion: "Delantero", rol: "DC", media: 79 },
+  { id: "jug-12", dorsal: 29, nombre: "G. Paiva", posicion: "Delantero", rol: "DC", media: 79 },
+  { id: "jug-14", dorsal: 11, nombre: "M. Bolados", posicion: "Delantero", rol: "ED", media: 77 },
+  { id: "jug-15", dorsal: 20, nombre: "A. Oroz", posicion: "Delantero", rol: "EI", media: 75 },
 ];
 
 const FORMACIONES_SEED = [
@@ -118,12 +120,12 @@ const FORMACIONES_SEED = [
       { id: "jug-3", dorsal: 37, nombre: "M. Falcón", posicion: "Defensa", rol: "DCI", x: 37, y: 74, media: 83 },
       { id: "jug-4", dorsal: 4, nombre: "A. Saldivia", posicion: "Defensa", rol: "DCD", x: 63, y: 74, media: 81 },
       { id: "jug-6", dorsal: 16, nombre: "Ó. Opazo", posicion: "Defensa", rol: "LD", x: 84, y: 74, media: 78 },
-      { id: "jug-8", dorsal: 8, nombre: "E. Pavez", posicion: "Mediocampo", rol: "MCD", x: 50, y: 58, media: 82 },
-      { id: "jug-9", dorsal: 23, nombre: "A. Vidal", posicion: "Mediocampo", rol: "MC", x: 34, y: 42, media: 86 },
-      { id: "jug-10", dorsal: 5, nombre: "L. Gil", posicion: "Mediocampo", rol: "MCO", x: 66, y: 42, media: 80 },
-      { id: "jug-15", dorsal: 32, nombre: "L. Cepeda", posicion: "Delantero", rol: "EI", x: 18, y: 24, media: 81 },
-      { id: "jug-13", dorsal: 9, nombre: "J. Correa", posicion: "Delantero", rol: "DC", x: 50, y: 20, media: 83 },
-      { id: "jug-12", dorsal: 7, nombre: "C. Palacios", posicion: "Delantero", rol: "ED", x: 82, y: 24, media: 85 },
+      { id: "jug-7", dorsal: 8, nombre: "E. Pavez", posicion: "Mediocampo", rol: "MCD", x: 50, y: 58, media: 82 },
+      { id: "jug-8", dorsal: 23, nombre: "A. Vidal", posicion: "Mediocampo", rol: "MC", x: 34, y: 42, media: 86 },
+      { id: "jug-9", dorsal: 34, nombre: "V. Pizarro", posicion: "Mediocampo", rol: "MCO", x: 66, y: 42, media: 80 },
+      { id: "jug-13", dorsal: 32, nombre: "L. Cepeda", posicion: "Delantero", rol: "EI", x: 18, y: 24, media: 81 },
+      { id: "jug-11", dorsal: 9, nombre: "J. Correa", posicion: "Delantero", rol: "DC", x: 50, y: 20, media: 83 },
+      { id: "jug-10", dorsal: 7, nombre: "C. Palacios", posicion: "Delantero", rol: "ED", x: 82, y: 24, media: 85 },
     ],
     suplentes: SUPLENTES_BASE,
   },
@@ -142,12 +144,12 @@ const FORMACIONES_SEED = [
       { id: "jug-3", dorsal: 37, nombre: "M. Falcón", posicion: "Defensa", rol: "DCI", x: 37, y: 74, media: 83 },
       { id: "jug-4", dorsal: 4, nombre: "A. Saldivia", posicion: "Defensa", rol: "DCD", x: 63, y: 74, media: 81 },
       { id: "jug-6", dorsal: 16, nombre: "Ó. Opazo", posicion: "Defensa", rol: "LD", x: 84, y: 74, media: 78 },
-      { id: "jug-8", dorsal: 8, nombre: "E. Pavez", posicion: "Mediocampo", rol: "MCD", x: 36, y: 58, media: 82 },
-      { id: "jug-9", dorsal: 23, nombre: "A. Vidal", posicion: "Mediocampo", rol: "MCD", x: 64, y: 58, media: 86 },
-      { id: "jug-15", dorsal: 32, nombre: "L. Cepeda", posicion: "Delantero", rol: "MI", x: 18, y: 36, media: 81 },
-      { id: "jug-10", dorsal: 5, nombre: "L. Gil", posicion: "Mediocampo", rol: "MCO", x: 50, y: 38, media: 80 },
-      { id: "jug-12", dorsal: 7, nombre: "C. Palacios", posicion: "Delantero", rol: "MD", x: 82, y: 36, media: 85 },
-      { id: "jug-13", dorsal: 9, nombre: "J. Correa", posicion: "Delantero", rol: "DC", x: 50, y: 20, media: 83 },
+      { id: "jug-7", dorsal: 8, nombre: "E. Pavez", posicion: "Mediocampo", rol: "MCD", x: 36, y: 58, media: 82 },
+      { id: "jug-8", dorsal: 23, nombre: "A. Vidal", posicion: "Mediocampo", rol: "MCD", x: 64, y: 58, media: 86 },
+      { id: "jug-13", dorsal: 32, nombre: "L. Cepeda", posicion: "Delantero", rol: "MI", x: 18, y: 36, media: 81 },
+      { id: "jug-9", dorsal: 34, nombre: "V. Pizarro", posicion: "Mediocampo", rol: "MCO", x: 50, y: 38, media: 80 },
+      { id: "jug-10", dorsal: 7, nombre: "C. Palacios", posicion: "Delantero", rol: "MD", x: 82, y: 36, media: 85 },
+      { id: "jug-11", dorsal: 9, nombre: "J. Correa", posicion: "Delantero", rol: "DC", x: 50, y: 20, media: 83 },
     ],
     suplentes: SUPLENTES_BASE,
   },

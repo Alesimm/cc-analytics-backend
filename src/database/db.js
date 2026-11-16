@@ -1,5 +1,5 @@
-// Conexion y manejo de la base de datos SQLite usando sql.js.
-// Aqui se crean las 7 tablas del sistema y se definen funciones simples para leer y guardar datos en cc_analytics.db.
+// conexion y manejo de la base de datos sqlite usando sql.js.
+// aqui se crean las 7 tablas del sistema y se definen funciones simples para leer y guardar datos en cc_analytics.db.
 
 import fs from "node:fs";
 import initSqlJs from "sql.js";
