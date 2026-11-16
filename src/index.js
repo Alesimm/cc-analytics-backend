@@ -1,5 +1,6 @@
 // archivo principal que levanta el servidor backend de cc analytics.
 // configura express y cors, inicia sqlite con datos base, expone /api/health y conecta las rutas de la api.
+// al final responde 404 en json para rutas inexistentes y atrapa cualquier error para no devolver html.
 
 import express from "express";
 import cors from "cors";
@@ -47,6 +48,21 @@ app.use("/api/v1/medico", medicoRoutes);
 app.use("/api/v1/partidos", partidosRoutes);
 app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
 app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
+
+// si ninguna ruta coincide respondemos 404 en json
+app.use((req, res) => {
+  res.status(404).json({ ok: false, mensaje: "Ruta no encontrada." });
+});
+
+// manejador global de errores: json malformado da 400 y cualquier otro error da 500, siempre en json
+app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ ok: false, mensaje: "El cuerpo de la peticion no es un json valido." });
+  }
+
+  console.error("Error inesperado:", err);
+  res.status(500).json({ ok: false, mensaje: "Ocurrio un error inesperado en el servidor." });
+});
 
 // arranque ordenado: inicializar sqlite, poblar si esta vacio y levantar servidor
 async function iniciarServidor() {

@@ -1,7 +1,20 @@
 // controlador para administrar las formaciones tacticas de la pizarra.
 // permite listar los esquemas oficiales y personalizados, crear nuevos, actualizar ajustes y eliminar los propios.
 
+import crypto from "node:crypto";
 import { queryAll, queryOne, execute } from "../database/db.js";
+
+// revisa que los cuatro ajustes tacticos sean numeros validos
+function ajustesInvalidos(formacion) {
+  return (
+    Number.isNaN(formacion.alturaBloque) ||
+    Number.isNaN(formacion.anchuraEquipo) ||
+    Number.isNaN(formacion.intensidadPresion) ||
+    Number.isNaN(formacion.ritmoPosesion)
+  );
+}
+
+const MENSAJE_AJUSTES = "Los ajustes tacticos (altura, anchura, presion y ritmo) deben ser numeros.";
 
 // convierte las columnas json de sqlite en arreglos listos para el frontend
 function formatearFormacion(fila) {
@@ -44,7 +57,7 @@ export function crearFormacion(req, res) {
   }
 
   const nueva = {
-    id: `form-${Date.now().toString().slice(-6)}`,
+    id: `form-${crypto.randomUUID().slice(0, 8)}`,
     nombre: String(nombre).trim(),
     descripcion: String(descripcion).trim(),
     esOficial: 0,
@@ -55,6 +68,10 @@ export function crearFormacion(req, res) {
     titularesJson: JSON.stringify(Array.isArray(titulares) ? titulares : []),
     suplentesJson: JSON.stringify(Array.isArray(suplentes) ? suplentes : []),
   };
+
+  if (ajustesInvalidos(nueva)) {
+    return res.status(400).json({ ok: false, mensaje: MENSAJE_AJUSTES });
+  }
 
   execute(
     `INSERT INTO formaciones (
@@ -102,6 +119,10 @@ export function actualizarFormacion(req, res) {
     titularesJson: datos.titulares !== undefined ? JSON.stringify(datos.titulares) : existente.titularesJson,
     suplentesJson: datos.suplentes !== undefined ? JSON.stringify(datos.suplentes) : existente.suplentesJson,
   };
+
+  if (ajustesInvalidos(actualizada)) {
+    return res.status(400).json({ ok: false, mensaje: MENSAJE_AJUSTES });
+  }
 
   execute(
     `UPDATE formaciones

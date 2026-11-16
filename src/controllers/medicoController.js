@@ -1,7 +1,22 @@
 // controlador del centro medico para registrar lesiones, actualizar fases, otorgar altas medicas y eliminar fichas.
-// ademas sincroniza automaticamente el estado del jugador en el plantel cuando entra o recibe el alta.
+// el nombre, dorsal y posicion de la ficha se toman siempre del plantel real (404 si el jugador no existe).
+// ademas mantiene sincronizado el estado del jugador: si tiene alguna baja activa queda en recuperacion,
+// y si ya no le quedan bajas activas vuelve a disponible.
 
+import crypto from "node:crypto";
 import { queryAll, queryOne, execute } from "../database/db.js";
+
+const ALTA = "Alta Médica";
+
+// revisa si el jugador tiene alguna ficha sin alta y actualiza su estado en el plantel
+function sincronizarEstadoJugador(jugadorId) {
+  const bajaActiva = queryOne(
+    "SELECT id FROM registros_medicos WHERE jugadorId = ? AND estado != ?",
+    [jugadorId, ALTA]
+  );
+  const nuevoEstado = bajaActiva ? "En recuperación" : "Disponible";
+  execute("UPDATE jugadores SET estado = ? WHERE id = ?", [nuevoEstado, jugadorId]);
+}
 
 // get /api/v1/medico -> lista todas las fichas medicas registradas
 export function listarRegistrosMedicos(req, res) {
@@ -13,9 +28,6 @@ export function listarRegistrosMedicos(req, res) {
 export function crearRegistroMedico(req, res) {
   const {
     jugadorId,
-    jugadorNombre,
-    dorsal = 0,
-    posicion = "Sin definir",
     tipoLesion,
     diagnostico,
     gravedad,
@@ -28,19 +40,29 @@ export function crearRegistroMedico(req, res) {
     observaciones = "",
   } = req.body || {};
 
-  if (!jugadorId || !jugadorNombre || !tipoLesion || !diagnostico || !gravedad || !medicoTratante) {
+  if (!jugadorId || !tipoLesion || !diagnostico || !gravedad || !medicoTratante) {
     return res.status(400).json({ ok: false, mensaje: "Faltan datos clinicos obligatorios para registrar la ficha." });
+  }
+
+  // los datos del jugador salen del plantel, no de lo que mande el cliente
+  const jugador = queryOne("SELECT * FROM jugadores WHERE id = ?", [String(jugadorId).trim()]);
+  if (!jugador) {
+    return res.status(404).json({ ok: false, mensaje: "El jugador indicado no existe en el plantel." });
   }
 
   const diasRec = Number(diasRecuperacion);
   const diasRest = diasRestantes !== undefined ? Number(diasRestantes) : diasRec;
 
+  if (Number.isNaN(diasRec) || Number.isNaN(diasRest)) {
+    return res.status(400).json({ ok: false, mensaje: "Los dias de recuperacion y dias restantes deben ser numeros." });
+  }
+
   const nuevo = {
-    id: `med-${Date.now().toString().slice(-6)}`,
-    jugadorId: String(jugadorId).trim(),
-    jugadorNombre: String(jugadorNombre).trim(),
-    dorsal: Number(dorsal) || 0,
-    posicion: String(posicion).trim(),
+    id: `med-${crypto.randomUUID().slice(0, 8)}`,
+    jugadorId: jugador.id,
+    jugadorNombre: jugador.nombre,
+    dorsal: jugador.dorsal,
+    posicion: jugador.posicion,
     tipoLesion: String(tipoLesion).trim(),
     diagnostico: String(diagnostico).trim(),
     gravedad: String(gravedad).trim(),
@@ -77,10 +99,7 @@ export function crearRegistroMedico(req, res) {
     ]
   );
 
-  // si el jugador no entra con alta medica inmediata, actualizamos su estado en el plantel
-  if (nuevo.estado !== "Alta Médica") {
-    execute("UPDATE jugadores SET estado = ? WHERE id = ?", ["En recuperación", nuevo.jugadorId]);
-  }
+  sincronizarEstadoJugador(nuevo.jugadorId);
 
   res.status(201).json({ ok: true, mensaje: "Ficha medica registrada.", registro: nuevo });
 }
@@ -93,12 +112,22 @@ export function actualizarRegistroMedico(req, res) {
   }
 
   const d = req.body || {};
+
+  // si cambian el jugador de la ficha, revisamos que exista y usamos sus datos reales
+  let jugador = { id: existente.jugadorId, nombre: existente.jugadorNombre, dorsal: existente.dorsal, posicion: existente.posicion };
+  if (d.jugadorId !== undefined) {
+    jugador = queryOne("SELECT * FROM jugadores WHERE id = ?", [String(d.jugadorId).trim()]);
+    if (!jugador) {
+      return res.status(404).json({ ok: false, mensaje: "El jugador indicado no existe en el plantel." });
+    }
+  }
+
   const actualizado = {
     id: existente.id,
-    jugadorId: d.jugadorId !== undefined ? String(d.jugadorId).trim() : existente.jugadorId,
-    jugadorNombre: d.jugadorNombre !== undefined ? String(d.jugadorNombre).trim() : existente.jugadorNombre,
-    dorsal: d.dorsal !== undefined ? Number(d.dorsal) : existente.dorsal,
-    posicion: d.posicion !== undefined ? String(d.posicion).trim() : existente.posicion,
+    jugadorId: jugador.id,
+    jugadorNombre: jugador.nombre,
+    dorsal: jugador.dorsal,
+    posicion: jugador.posicion,
     tipoLesion: d.tipoLesion !== undefined ? String(d.tipoLesion).trim() : existente.tipoLesion,
     diagnostico: d.diagnostico !== undefined ? String(d.diagnostico).trim() : existente.diagnostico,
     gravedad: d.gravedad !== undefined ? String(d.gravedad).trim() : existente.gravedad,
@@ -110,6 +139,10 @@ export function actualizarRegistroMedico(req, res) {
     medicoTratante: d.medicoTratante !== undefined ? String(d.medicoTratante).trim() : existente.medicoTratante,
     observaciones: d.observaciones !== undefined ? String(d.observaciones).trim() : existente.observaciones,
   };
+
+  if (Number.isNaN(actualizado.diasRecuperacion) || Number.isNaN(actualizado.diasRestantes)) {
+    return res.status(400).json({ ok: false, mensaje: "Los dias de recuperacion y dias restantes deben ser numeros." });
+  }
 
   execute(
     `UPDATE registros_medicos
@@ -136,10 +169,16 @@ export function actualizarRegistroMedico(req, res) {
     ]
   );
 
+  // sincronizamos al jugador actual y tambien al anterior si la ficha cambio de dueño
+  sincronizarEstadoJugador(actualizado.jugadorId);
+  if (existente.jugadorId !== actualizado.jugadorId) {
+    sincronizarEstadoJugador(existente.jugadorId);
+  }
+
   res.json({ ok: true, mensaje: "Ficha medica actualizada.", registro: actualizado });
 }
 
-// patch /api/v1/medico/:id/alta -> otorga el alta medica y deja disponible al jugador en el plantel
+// patch /api/v1/medico/:id/alta -> otorga el alta medica y deja disponible al jugador si no tiene otra baja
 export function darAltaMedica(req, res) {
   const existente = queryOne("SELECT * FROM registros_medicos WHERE id = ?", [req.params.id]);
   if (!existente) {
@@ -148,10 +187,10 @@ export function darAltaMedica(req, res) {
 
   execute(
     "UPDATE registros_medicos SET fase = ?, estado = ?, diasRestantes = 0 WHERE id = ?",
-    ["Alta Médica", "Alta Médica", req.params.id]
+    [ALTA, ALTA, req.params.id]
   );
 
-  execute("UPDATE jugadores SET estado = ? WHERE id = ?", ["Disponible", existente.jugadorId]);
+  sincronizarEstadoJugador(existente.jugadorId);
 
   const actualizado = queryOne("SELECT * FROM registros_medicos WHERE id = ?", [req.params.id]);
   res.json({ ok: true, mensaje: `Alta medica otorgada a ${existente.jugadorNombre}.`, registro: actualizado });
@@ -165,5 +204,9 @@ export function eliminarRegistroMedico(req, res) {
   }
 
   execute("DELETE FROM registros_medicos WHERE id = ?", [req.params.id]);
+
+  // si se borro una baja activa, el jugador puede volver a quedar disponible
+  sincronizarEstadoJugador(existente.jugadorId);
+
   res.json({ ok: true, mensaje: "Ficha medica eliminada." });
 }

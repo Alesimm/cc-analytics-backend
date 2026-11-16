@@ -1,5 +1,5 @@
-// Archivo de configuracion general del servidor (puerto, clave JWT y ruta de la base de datos).
-// Si no existe un archivo .env, usa valores por defecto para que el proyecto funcione de inmediato.
+// archivo de configuracion general del servidor (puerto, clave jwt y ruta de la base de datos).
+// si no existe un archivo .env, usa valores por defecto para que el proyecto funcione de inmediato.
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
