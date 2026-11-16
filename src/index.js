@@ -8,6 +8,8 @@ import { initDb, queryOne } from "./database/db.js";
 import { seedIfEmpty } from "./database/seed.js";
 import authRoutes from "./routes/authRoutes.js";
 import jugadoresRoutes from "./routes/jugadoresRoutes.js";
+import formacionesRoutes from "./routes/formacionesRoutes.js";
+import medicoRoutes from "./routes/medicoRoutes.js";
 import { listarJugadoresV2, eliminarDirectriz } from "./controllers/jugadoresController.js";
 import { verificarToken, autorizarRoles } from "./middlewares/authMiddleware.js";
 
@@ -39,6 +41,8 @@ app.get("/api/health", (req, res) => {
 // rutas de la version 1 y version 2 de la api
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/jugadores", jugadoresRoutes);
+app.use("/api/v1/formaciones", formacionesRoutes);
+app.use("/api/v1/medico", medicoRoutes);
 app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
 app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
 
