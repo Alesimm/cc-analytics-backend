@@ -68,6 +68,12 @@ export function crearPartido(req, res) {
   if (!d.rival || !d.condicion || !d.torneo || !d.fecha || !d.hora || !d.estadio) {
     return res.status(400).json({ ok: false, mensaje: "Faltan datos obligatorios del partido." });
   }
+  if (d.golesColoColo !== undefined && d.golesColoColo !== null && Number.isNaN(Number(d.golesColoColo))) {
+    return res.status(400).json({ ok: false, mensaje: "Los goles de Colo-Colo deben ser un numero valido." });
+  }
+  if (d.golesRival !== undefined && d.golesRival !== null && Number.isNaN(Number(d.golesRival))) {
+    return res.status(400).json({ ok: false, mensaje: "Los goles del rival deben ser un numero valido." });
+  }
 
   const rivalLimpio = String(d.rival).trim();
   const sigla = d.siglaRival
@@ -92,8 +98,8 @@ export function crearPartido(req, res) {
     jornada: d.jornada ? String(d.jornada).trim() : null,
     clima: d.clima ? String(d.clima).trim() : null,
     relevancia: d.relevancia ? String(d.relevancia).trim() : null,
-    golesColoColo: d.golesColoColo ?? null,
-    golesRival: d.golesRival ?? null,
+    golesColoColo: d.golesColoColo !== undefined && d.golesColoColo !== null ? Number(d.golesColoColo) : null,
+    golesRival: d.golesRival !== undefined && d.golesRival !== null ? Number(d.golesRival) : null,
     resultado: d.resultado || null,
     goleadoresJson: d.goleadores ? JSON.stringify(d.goleadores) : null,
     goleadoresRivalJson: d.goleadoresRival ? JSON.stringify(d.goleadoresRival) : null,
@@ -142,7 +148,7 @@ export function actualizarPartido(req, res) {
     id: existente.id,
     tipo: d.tipo !== undefined ? String(d.tipo).trim() : existente.tipo,
     rival: d.rival !== undefined ? String(d.rival).trim() : existente.rival,
-    siglaRival: d.siglaRival !== undefined ? String(d.siglaRival).trim() : existente.siglaRival,
+    siglaRival: d.siglaRival !== undefined ? String(d.siglaRival).trim().toUpperCase().slice(0, 4) : existente.siglaRival,
     rivalEscudo: d.rivalEscudo !== undefined ? d.rivalEscudo : existente.rivalEscudo,
     rivalEscudoColor: d.rivalEscudoColor !== undefined ? d.rivalEscudoColor : existente.rivalEscudoColor,
     condicion: d.condicion !== undefined ? String(d.condicion).trim() : existente.condicion,
@@ -156,8 +162,8 @@ export function actualizarPartido(req, res) {
     jornada: d.jornada !== undefined ? d.jornada : existente.jornada,
     clima: d.clima !== undefined ? d.clima : existente.clima,
     relevancia: d.relevancia !== undefined ? d.relevancia : existente.relevancia,
-    golesColoColo: d.golesColoColo !== undefined ? d.golesColoColo : existente.golesColoColo,
-    golesRival: d.golesRival !== undefined ? d.golesRival : existente.golesRival,
+    golesColoColo: d.golesColoColo !== undefined ? (d.golesColoColo === null ? null : Number(d.golesColoColo)) : existente.golesColoColo,
+    golesRival: d.golesRival !== undefined ? (d.golesRival === null ? null : Number(d.golesRival)) : existente.golesRival,
     resultado: d.resultado !== undefined ? d.resultado : existente.resultado,
     goleadoresJson: d.goleadores !== undefined ? JSON.stringify(d.goleadores) : existente.goleadoresJson,
     goleadoresRivalJson: d.goleadoresRival !== undefined ? JSON.stringify(d.goleadoresRival) : existente.goleadoresRivalJson,

@@ -1,5 +1,5 @@
 // controlador para administrar las formaciones tacticas de la pizarra.
-// permite listar los esquemas oficiales y personalizados, crear nuevos, actualizar ajustes y eliminar los propios.
+// permite listar esquemas, crear nuevos, actualizar ajustes y eliminar formaciones (solo admin).
 
 import crypto from "node:crypto";
 import { queryAll, queryOne, execute } from "../database/db.js";
