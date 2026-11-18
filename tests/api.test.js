@@ -66,12 +66,12 @@ describe("CC Analytics Backend — API REST, JWT, RBAC y Swagger", () => {
     assert.equal(rAdmin.datos.usuario.rol, "ADMIN");
     tokenAdmin = rAdmin.datos.token;
 
-    const rTec = await peticion("/api/v1/auth/login", "POST", null, { correo: "tecnico@colocolo.cl", password: "tecnico2026" });
+    const rTec = await peticion("/api/v1/auth/login", "POST", null, { correo: "tecnico@colocolo.cl", password: "tecnico26" });
     assert.equal(rTec.status, 200);
     assert.equal(rTec.datos.usuario.rol, "CUERPO_TECNICO");
     tokenTecnico = rTec.datos.token;
 
-    const rAna = await peticion("/api/v1/auth/login", "POST", null, { correo: "consulta@colocolo.cl", password: "consulta2026" });
+    const rAna = await peticion("/api/v1/auth/login", "POST", null, { correo: "consulta@colocolo.cl", password: "consulta26" });
     assert.equal(rAna.status, 200);
     assert.equal(rAna.datos.usuario.rol, "ANALISTA_LECTURA");
     tokenAnalista = rAna.datos.token;

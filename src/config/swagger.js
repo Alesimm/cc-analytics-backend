@@ -28,8 +28,8 @@ export const swaggerSpec = {
     description:
       "API RESTful oficial de CC Analytics (Evaluacion Parcial 3 - Duoc UC). " +
       "Credenciales de prueba: admin@colocolo.cl / colo2026 (ADMIN), " +
-      "tecnico@colocolo.cl / tecnico2026 (CUERPO_TECNICO), " +
-      "consulta@colocolo.cl / consulta2026 (ANALISTA_LECTURA).",
+      "tecnico@colocolo.cl / tecnico26 (CUERPO_TECNICO), " +
+      "consulta@colocolo.cl / consulta26 (ANALISTA_LECTURA).",
   },
   servers: [
     {
