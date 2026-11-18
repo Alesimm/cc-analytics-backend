@@ -9,8 +9,8 @@ Reemplaza los datos simulados en memoria del frontend React (`cc-analytics-react
 - **Servidor y Base de Datos:** Node.js + Express + SQLite (`sql.js`) con 7 tablas relacionales (`usuarios`, `jugadores`, `directrices`, `partidos`, `formaciones`, `registros_medicos`, `tickets_soporte`) y carga inicial automática (`seed`).
 - **Seguridad JWT y Roles (RBAC):**
   - `ADMIN` (`admin@colocolo.cl` / `colo2026`): Acceso total CRUD en todos los módulos.
-  - `CUERPO_TECNICO` (`tecnico@colocolo.cl` / `tecnico2026`): Gestión operativa de directrices tácticas, formaciones y centro médico (sin borrados administrativos).
-  - `ANALISTA_LECTURA` (`consulta@colocolo.cl` / `consulta2026`): Solo lectura en plantel, formaciones y calendario + creación de tickets en soporte (sin acceso clínico a `/medico`).
+  - `CUERPO_TECNICO` (`tecnico@colocolo.cl` / `tecnico26`): Gestión operativa de directrices tácticas, formaciones y centro médico (sin borrados administrativos).
+  - `ANALISTA_LECTURA` (`consulta@colocolo.cl` / `consulta26`): Solo lectura en plantel, formaciones y calendario + creación de tickets en soporte (sin acceso clínico a `/medico`).
 - **Rutas principales (`/api/v1` y `/api/v2`):**
   - `GET /api/health` — Estado del servidor y conteo base (pública).
   - `POST /api/v1/auth/login` y `GET /api/v1/auth/me` — Inicio de sesión JWT y validación de sesión activa (`F5`).
