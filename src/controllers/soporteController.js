@@ -12,12 +12,16 @@ const ESTADOS_VALIDOS = ["Abierto", "En Revisión", "Resuelto"];
 export function listarTickets(req, res) {
   const { estado } = req.query || {};
 
-  let tickets;
-  if (estado && ESTADOS_VALIDOS.includes(estado)) {
-    tickets = queryAll("SELECT * FROM tickets_soporte WHERE estado = ? ORDER BY rowid DESC", [estado]);
-  } else {
-    tickets = queryAll("SELECT * FROM tickets_soporte ORDER BY rowid DESC");
+  if (estado !== undefined && !ESTADOS_VALIDOS.includes(estado)) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "El estado debe ser Abierto, En Revisión o Resuelto.",
+    });
   }
+
+  const tickets = estado
+    ? queryAll("SELECT * FROM tickets_soporte WHERE estado = ? ORDER BY rowid DESC", [estado])
+    : queryAll("SELECT * FROM tickets_soporte ORDER BY rowid DESC");
 
   res.json({ ok: true, total: tickets.length, tickets });
 }

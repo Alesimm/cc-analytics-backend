@@ -1,10 +1,12 @@
 // archivo principal que levanta el servidor backend de cc analytics.
-// configura express y cors, inicia sqlite con datos base, expone /api/health y conecta las rutas de la api.
+// configura express, cors y swagger (/api-docs), inicia sqlite con datos base, expone /api/health y conecta las rutas de la api.
 // al final responde 404 en json para rutas inexistentes y atrapa cualquier error para no devolver html.
 
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 import { ENV } from "./config/env.js";
+import { swaggerSpec } from "./config/swagger.js";
 import { initDb, queryOne } from "./database/db.js";
 import { seedIfEmpty } from "./database/seed.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -42,6 +44,12 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// documentacion interactiva swagger ui y especificacion json
+app.get("/api-docs.json", (req, res) => {
+  res.json(swaggerSpec);
+});
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // rutas de la version 1 y version 2 de la api
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/jugadores", jugadoresRoutes);
@@ -49,6 +57,7 @@ app.use("/api/v1/formaciones", formacionesRoutes);
 app.use("/api/v1/medico", medicoRoutes);
 app.use("/api/v1/partidos", partidosRoutes);
 app.use("/api/v1/soporte", soporteRoutes);
+// rutas sueltas directas (v2 y eliminacion directa de directriz) para evitar archivos de una sola ruta
 app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
 app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
 
@@ -68,21 +77,29 @@ app.use((err, req, res, next) => {
 });
 
 // arranque ordenado: inicializar sqlite, poblar si esta vacio y levantar servidor
-async function iniciarServidor() {
-  try {
-    await initDb();
-    const poblado = await seedIfEmpty(false);
-    if (poblado) {
-      console.log("Seed inicial ejecutado en cc_analytics.db");
-    }
-
-    app.listen(ENV.PORT, () => {
-      console.log(`Servidor CC Analytics corriendo en http://localhost:${ENV.PORT}`);
-    });
-  } catch (error) {
-    console.error("Error al iniciar el servidor:", error);
-    process.exit(1);
+export async function iniciarServidor(puerto = ENV.PORT) {
+  await initDb();
+  const poblado = await seedIfEmpty(false);
+  if (poblado) {
+    console.log("Seed inicial ejecutado en cc_analytics.db");
   }
+
+  return new Promise((resolve) => {
+    const server = app.listen(puerto, () => {
+      console.log(`Servidor CC Analytics corriendo en http://localhost:${puerto}`);
+      console.log(`Swagger UI disponible en http://localhost:${puerto}/api-docs`);
+      resolve(server);
+    });
+  });
 }
 
-iniciarServidor();
+// solo arranca automaticamente cuando se ejecuta directamente con node src/index.js
+const esEjecucionDirecta = process.argv[1] && process.argv[1].endsWith("index.js");
+if (esEjecucionDirecta) {
+  iniciarServidor().catch((error) => {
+    console.error("Error al iniciar el servidor:", error);
+    process.exit(1);
+  });
+}
+
+export { app };
