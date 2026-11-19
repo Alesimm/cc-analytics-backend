@@ -82,6 +82,7 @@ describe("CC Analytics Backend — API REST, JWT, RBAC y Swagger", () => {
     const rMe = await peticion("/api/v1/auth/me", "GET", tokenAdmin);
     assert.equal(rMe.status, 200);
     assert.equal(rMe.datos.usuario.correo, "admin@colocolo.cl");
+    assert.ok(rMe.datos.token);
 
     const rMeSinToken = await peticion("/api/v1/auth/me", "GET");
     assert.equal(rMeSinToken.status, 401);
@@ -124,6 +125,13 @@ describe("CC Analytics Backend — API REST, JWT, RBAC y Swagger", () => {
 
     const borrado = await peticion(`/api/v1/jugadores/${idJug}`, "DELETE", tokenAdmin);
     assert.equal(borrado.status, 200);
+
+    const dirPut = await peticion("/api/v1/directrices/dir-1", "PUT", tokenTecnico, {
+      calificacion: 9.1,
+      indicacion: "Mantener presion alta coordinada.",
+    });
+    assert.equal(dirPut.status, 200);
+    assert.equal(dirPut.datos.directriz.calificacion, 9.1);
   });
 
   it("4. aplica permisos clinicos en /api/v1/medico y tacticos en /api/v1/formaciones", async () => {

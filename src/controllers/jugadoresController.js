@@ -220,6 +220,42 @@ export function crearDirectriz(req, res) {
   res.status(201).json({ ok: true, mensaje: "Directriz registrada.", directriz: nueva });
 }
 
+// put /api/v1/directrices/:id -> actualiza una directriz tactica (admin y cuerpo tecnico)
+export function actualizarDirectriz(req, res) {
+  const existente = queryOne("SELECT * FROM directrices WHERE id = ?", [req.params.id]);
+  if (!existente) {
+    return res.status(404).json({ ok: false, mensaje: "Directriz no encontrada." });
+  }
+
+  const d = req.body || {};
+  const nota = d.calificacion !== undefined ? Number(d.calificacion) : existente.calificacion;
+  if (Number.isNaN(nota) || nota < 1 || nota > 10) {
+    return res.status(400).json({ ok: false, mensaje: "La calificacion debe estar entre 1 y 10." });
+  }
+
+  const actualizada = {
+    id: existente.id,
+    jugadorId: existente.jugadorId,
+    jugadorNombre: existente.jugadorNombre,
+    area: d.area !== undefined ? String(d.area).trim() : existente.area,
+    prioridad: d.prioridad !== undefined ? String(d.prioridad).trim() : existente.prioridad,
+    calificacion: nota,
+    indicacion: d.indicacion !== undefined ? String(d.indicacion).trim() : existente.indicacion,
+    fecha: existente.fecha,
+  };
+
+  if (!actualizada.indicacion) {
+    return res.status(400).json({ ok: false, mensaje: "La indicacion tactica no puede quedar vacia." });
+  }
+
+  execute(
+    "UPDATE directrices SET area = ?, prioridad = ?, calificacion = ?, indicacion = ? WHERE id = ?",
+    [actualizada.area, actualizada.prioridad, actualizada.calificacion, actualizada.indicacion, actualizada.id]
+  );
+
+  res.json({ ok: true, mensaje: "Directriz actualizada.", directriz: actualizada });
+}
+
 // delete /api/v1/directrices/:id -> elimina una directriz tactica (admin y cuerpo tecnico)
 export function eliminarDirectriz(req, res) {
   const existente = queryOne("SELECT * FROM directrices WHERE id = ?", [req.params.id]);
