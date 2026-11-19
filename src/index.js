@@ -15,7 +15,7 @@ import formacionesRoutes from "./routes/formacionesRoutes.js";
 import medicoRoutes from "./routes/medicoRoutes.js";
 import partidosRoutes from "./routes/partidosRoutes.js";
 import soporteRoutes from "./routes/soporteRoutes.js";
-import { listarJugadoresV2, eliminarDirectriz } from "./controllers/jugadoresController.js";
+import { listarJugadoresV2, actualizarDirectriz, eliminarDirectriz } from "./controllers/jugadoresController.js";
 import { verificarToken, autorizarRoles } from "./middlewares/authMiddleware.js";
 
 const app = express();
@@ -57,7 +57,8 @@ app.use("/api/v1/formaciones", formacionesRoutes);
 app.use("/api/v1/medico", medicoRoutes);
 app.use("/api/v1/partidos", partidosRoutes);
 app.use("/api/v1/soporte", soporteRoutes);
-// rutas sueltas directas (v2 y eliminacion directa de directriz) para evitar archivos de una sola ruta
+// rutas sueltas directas (v2 y gestion directa de directriz) para evitar archivos de una sola ruta
+app.put("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), actualizarDirectriz);
 app.delete("/api/v1/directrices/:id", verificarToken, autorizarRoles("ADMIN", "CUERPO_TECNICO"), eliminarDirectriz);
 app.get("/api/v2/jugadores", verificarToken, listarJugadoresV2);
 

@@ -48,5 +48,8 @@ export function me(req, res) {
     return res.status(401).json({ ok: false, mensaje: "El usuario ya no existe." });
   }
 
-  res.json({ ok: true, usuario: usuarioPublico(fila) });
+  const usuario = usuarioPublico(fila);
+  const token = jwt.sign(usuario, ENV.JWT_SECRET, { expiresIn: ENV.JWT_EXPIRES_IN });
+
+  res.json({ ok: true, token, usuario });
 }

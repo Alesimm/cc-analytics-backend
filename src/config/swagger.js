@@ -219,6 +219,25 @@ export const swaggerSpec = {
     },
 
     "/api/v1/directrices/{id}": {
+      put: {
+        tags: ["Directrices"],
+        summary: "Actualiza una directriz tactica existente (ADMIN y CUERPO_TECNICO)",
+        security: seguridadJwt,
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", example: "dir-1" } }],
+        requestBody: bodyJson({
+          area: "Estrategia",
+          prioridad: "Alta",
+          calificacion: 9.0,
+          indicacion: "Ajustar basculacion en bloque medio.",
+        }),
+        responses: {
+          200: { description: "Directriz actualizada (200)" },
+          400: { description: "Datos invalidos (400)" },
+          401: resp401,
+          403: resp403,
+          404: resp404,
+        },
+      },
       delete: {
         tags: ["Directrices"],
         summary: "Elimina una directriz tactica (ADMIN y CUERPO_TECNICO)",
